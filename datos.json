@@ -1,0 +1,194 @@
+{
+  "usuarios": {
+    "siguiente": 8,
+    "registros": [
+      {
+        "id_usuario": 1,
+        "nombres": "Carlos",
+        "apellido1": "Ramírez",
+        "apellido2": "López",
+        "estatus": "habilitado"
+      },
+      {
+        "id_usuario": 2,
+        "nombres": "María",
+        "apellido1": "González",
+        "apellido2": "Soto",
+        "estatus": "habilitado"
+      },
+      {
+        "id_usuario": 3,
+        "nombres": "Luis",
+        "apellido1": "Hernández",
+        "apellido2": null,
+        "estatus": "deshabilitado"
+      }
+    ]
+  },
+  "vehiculos": {
+    "siguiente": 6,
+    "registros": [
+      {
+        "id_vehiculo": 1,
+        "modelo": "NP300",
+        "marca": "Nissan",
+        "matricula": "DGO-101-A",
+        "descripcion_vehiculo": "Unidad de reparto",
+        "id_usuario_fk": 1
+      },
+      {
+        "id_vehiculo": 2,
+        "modelo": "Kangoo",
+        "marca": "Renault",
+        "matricula": "DGO-202-B",
+        "descripcion_vehiculo": "Unidad de reparto",
+        "id_usuario_fk": 2
+      },
+      {
+        "id_vehiculo": 3,
+        "modelo": "Transit",
+        "marca": "Ford",
+        "matricula": "DGO-303-C",
+        "descripcion_vehiculo": "Unidad de reparto",
+        "id_usuario_fk": 3
+      },
+      {
+        "id_vehiculo": 4,
+        "modelo": "Hilux",
+        "marca": "Toyota",
+        "matricula": "DGO-404-D",
+        "descripcion_vehiculo": "Unidad de reparto",
+        "id_usuario_fk": 4
+      },
+      {
+        "id_vehiculo": 5,
+        "modelo": "Sprinter",
+        "marca": "Mercedes",
+        "matricula": "DGO-505-E",
+        "descripcion_vehiculo": "Unidad de reparto",
+        "id_usuario_fk": 5
+      }
+    ]
+  },
+  "cajones": {
+    "siguiente": 6,
+    "registros": [
+      {
+        "id_cajon": 1,
+        "nombre": "Cajón A1",
+        "hora_apertura": "06:00:00",
+        "hora_cierre": "14:00:00",
+        "paquetes": 124,
+        "id_vehiculo_fk": 1
+      },
+      {
+        "id_cajon": 2,
+        "nombre": "Cajón A2",
+        "hora_apertura": "08:00:00",
+        "hora_cierre": "16:00:00",
+        "paquetes": 98,
+        "id_vehiculo_fk": 2
+      },
+      {
+        "id_cajon": 3,
+        "nombre": "Cajón B1",
+        "hora_apertura": "12:00:00",
+        "hora_cierre": "20:00:00",
+        "paquetes": 0,
+        "id_vehiculo_fk": 3
+      },
+      {
+        "id_cajon": 4,
+        "nombre": "Cajón B2",
+        "hora_apertura": "14:00:00",
+        "hora_cierre": "22:00:00",
+        "paquetes": 143,
+        "id_vehiculo_fk": 4
+      },
+      {
+        "id_cajon": 5,
+        "nombre": "Cajón C1",
+        "hora_apertura": "18:00:00",
+        "hora_cierre": "23:00:00",
+        "paquetes": 87,
+        "id_vehiculo_fk": 5
+      }
+    ]
+  },
+  "roles": {
+    "siguiente": 7,
+    "registros": [
+      {
+        "id_rol": 1,
+        "rol": "conductor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 1
+      },
+      {
+        "id_rol": 2,
+        "rol": "conductor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 2
+      },
+      {
+        "id_rol": 3,
+        "rol": "conductor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 3
+      },
+      {
+        "id_rol": 4,
+        "rol": "conductor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 4
+      },
+      {
+        "id_rol": 5,
+        "rol": "conductor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 5
+      },
+      {
+        "id_rol": 6,
+        "rol": "supervisor",
+        "rol_descripcion": null,
+        "id_usuario_fk": 6
+      }
+    ]
+  },
+  "contactos": {
+    "siguiente": 7,
+    "registros": [
+      {
+        "id_contacto": 1,
+        "telefono": "6185550101",
+        "email": "carlos@almacen.mx",
+        "id_usuario_fk": 1
+      },
+      {
+        "id_contacto": 2,
+        "telefono": "6185550102",
+        "email": "maria@almacen.mx",
+        "id_usuario_fk": 2
+      },
+      {
+        "id_contacto": 3,
+        "telefono": "6185550103",
+        "email": "luis@almacen.mx",
+        "id_usuario_fk": 3
+      },
+      {
+        "id_contacto": 4,
+        "telefono": "6185550104",
+        "email": "ana@almacen.mx",
+        "id_usuario_fk": 4
+      },
+      {
+        "id_contacto": 5,
+        "telefono": "6185550105",
+        "email": "jorge@almacen.mx",
+        "id_usuario_fk": 5
+      }
+    ]
+  }
+}

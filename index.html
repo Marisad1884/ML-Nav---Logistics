@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0e1a">
+  <title>YARD CONSOLE · Control de almacén</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a0e1a;
+      --panel: #111827;
+      --panel-2: #1a2338;
+      --border: #27324d;
+      --text: #e7ecf6;
+      --muted: #8793ae;
+      --cyan: #22d3ee;
+      --purple: #8b5cf6;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #f43f5e;
+      --blue-gray: #7c89a6;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.5 "Segoe UI", system-ui, sans-serif;
+    }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; }
+    .topbar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 12px 28px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      color: var(--cyan);
+      font-weight: 800;
+      border: 2px solid var(--cyan);
+      background: var(--panel-2);
+      clip-path: polygon(50% 0, 94% 25%, 94% 75%, 50% 100%, 6% 75%, 6% 25%);
+    }
+    .brand h1 { margin: 0; font-size: 17px; letter-spacing: .04em; }
+    .brand p, .clock p { margin: 0; color: var(--muted); font-size: 12px; }
+    .clock { text-align: right; }
+    .clock strong { color: var(--cyan); font-size: 19px; font-variant-numeric: tabular-nums; }
+    .clock p { text-transform: capitalize; }
+    .live { color: var(--green); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+    .accent-line { height: 3px; background: linear-gradient(90deg, var(--cyan), var(--purple)); }
+    .layout { display: flex; min-height: calc(100vh - 80px); }
+    aside {
+      flex: 0 0 220px;
+      padding: 22px 0;
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+    }
+    .nav-label { margin: 0 20px 10px; color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .09em; }
+    .nav-item {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: #b6c0d6;
+      background: transparent;
+      border: 0;
+      border-left: 4px solid transparent;
+      text-align: left;
+    }
+    .nav-item:hover, .nav-item.active { color: var(--text); background: var(--panel-2); }
+    .nav-item.active { border-left-color: var(--cyan); }
+    .nav-item .icon { width: 22px; color: var(--muted); text-align: center; }
+    .nav-item.active .icon { color: var(--cyan); }
+    main { min-width: 0; flex: 1; padding: 26px 28px; overflow: auto; }
+    .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+    .page-heading h2 { margin: 0; font-size: 24px; }
+    .page-heading p { margin: 3px 0 0; color: var(--muted); }
+    .muted { color: var(--muted); }
+    .cards { display: grid; grid-template-columns: repeat(5, minmax(130px, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .card { display: flex; min-height: 94px; background: var(--panel); border: 1px solid var(--border); }
+    .card::before { width: 4px; content: ""; background: var(--card-color, var(--cyan)); }
+    .card-body { padding: 12px 15px; }
+    .card strong { display: block; color: var(--card-color, var(--cyan)); font-size: 27px; line-height: 1.2; }
+    .card span { color: var(--muted); font-size: 10px; font-weight: 700; text-transform: uppercase; }
+    .toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+    .toolbar label { color: var(--muted); font-size: 10px; font-weight: 700; letter-spacing: .06em; }
+    input, select {
+      min-height: 38px;
+      padding: 8px 10px;
+      color: var(--text);
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+    }
+    input:focus, select:focus { outline: 1px solid var(--cyan); border-color: var(--cyan); }
+    .toolbar input[type="search"] { width: min(260px, 100%); }
+    .toolbar select { min-width: 150px; }
+    .spacer { flex: 1; }
+    .button {
+      min-height: 38px;
+      padding: 8px 14px;
+      color: var(--bg);
+      font-weight: 700;
+      background: var(--cyan);
+      border: 1px solid transparent;
+      border-radius: 5px;
+    }
+    .button:hover { filter: brightness(1.1); }
+    .button.secondary { color: var(--text); background: var(--panel-2); border-color: var(--border); }
+    .button.danger { color: white; background: var(--red); }
+    .button.small { min-height: 30px; padding: 4px 9px; font-size: 12px; }
+    .table-wrap { overflow: auto; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+    th { padding: 11px 12px; color: var(--cyan); background: var(--panel-2); font-size: 10px; text-align: left; text-transform: uppercase; }
+    td { padding: 10px 12px; border-top: 1px solid rgba(39, 50, 77, .7); }
+    tbody tr:nth-child(even) { background: rgba(26, 35, 56, .55); }
+    tbody tr:hover { background: rgba(34, 211, 238, .07); }
+    .status { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; }
+    .status::before { content: "●"; }
+    .status.activo, .status.habilitado { color: var(--green); }
+    .status.por_iniciar { color: var(--amber); }
+    .status.finalizado, .status.sin_cajon { color: var(--blue-gray); }
+    .status.deshabilitado { color: var(--red); }
+    .progress { width: 90px; height: 7px; display: inline-block; margin-right: 7px; overflow: hidden; vertical-align: middle; background: var(--panel-2); border-radius: 8px; }
+    .progress i { height: 100%; display: block; background: var(--cyan); }
+    .empty { padding: 28px; color: var(--muted); text-align: center; }
+    .updated { margin-left: auto; color: var(--muted); font-size: 12px; }
+    dialog {
+      width: min(550px, calc(100vw - 28px));
+      max-height: 90vh;
+      padding: 0;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 20px 70px #0009;
+    }
+    dialog::backdrop { background: #030712c9; }
+    .dialog-head { padding: 18px 22px; border-bottom: 1px solid var(--border); }
+    .dialog-head h2 { margin: 0; font-size: 19px; }
+    .dialog-body { max-height: calc(90vh - 145px); overflow: auto; padding: 18px 22px; }
+    .field { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: center; gap: 12px; margin-bottom: 13px; }
+    .field label { color: var(--muted); font-size: 12px; }
+    .field input, .field select { width: 100%; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 22px; border-top: 1px solid var(--border); }
+    .notice { margin-bottom: 14px; padding: 10px 13px; color: var(--amber); background: #fbbf2414; border: 1px solid #fbbf2440; border-radius: 5px; }
+    @media (max-width: 950px) {
+      .cards { grid-template-columns: repeat(3, minmax(130px, 1fr)); }
+      aside { flex-basis: 185px; }
+      main { padding: 22px 18px; }
+    }
+    @media (max-width: 650px) {
+      .topbar { padding: 10px 14px; }
+      .brand p { display: none; }
+      .layout { display: block; }
+      aside { display: flex; overflow-x: auto; padding: 0; border-right: 0; border-bottom: 1px solid var(--border); }
+      .nav-label { display: none; }
+      .nav-item { width: auto; flex: 0 0 auto; padding: 10px 12px; border-left: 0; border-bottom: 3px solid transparent; }
+      .nav-item.active { border-bottom-color: var(--cyan); }
+      .nav-item .icon { width: auto; }
+      main { padding: 18px 12px; }
+      .page-heading { align-items: flex-start; }
+      .page-heading h2 { font-size: 20px; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .card { min-height: 78px; }
+      .card strong { font-size: 22px; }
+      .updated { width: 100%; margin-left: 0; }
+      .field { grid-template-columns: 1fr; gap: 4px; }
+      .clock strong { font-size: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">YC</div>
+      <div><h1>YARD CONSOLE</h1><p>Control de almacén y repartidores</p></div>
+    </div>
+    <div class="clock">
+      <div><span class="live">● EN VIVO&nbsp;&nbsp;</span><strong id="clock"></strong></div>
+      <p id="date"></p>
+    </div>
+  </header>
+  <div class="accent-line"></div>
+  <div class="layout">
+    <aside aria-label="Navegación">
+      <p class="nav-label">NAVEGACIÓN</p>
+      <nav id="navigation"></nav>
+    </aside>
+    <main id="main" aria-live="polite"></main>
+  </div>
+  <dialog id="record-dialog">
+    <form id="record-form">
+      <div class="dialog-head"><h2 id="dialog-title"></h2></div>
+      <div class="dialog-body" id="dialog-fields"></div>
+      <div class="dialog-actions">
+        <button class="button secondary" type="button" id="cancel-dialog">Cancelar</button>
+        <button class="button" type="submit">Guardar</button>
+      </div>
+    </form>
+  </dialog>
+  <script>
+    "use strict";
+    const STORE_KEY = "yard-console-static-v1";
+    const STATUS = {
+      activo: "ACTIVO",
+      por_iniciar: "POR INICIAR",
+      finalizado: "FINALIZADO",
+      deshabilitado: "DESHABILITADO",
+      sin_cajon: "SIN CAJÓN"
+    };
+    const ENTITIES = {
+      usuarios: {
+        title: "Usuarios", singular: "usuario", pk: "id_usuario",
+        columns: [["id_usuario", "ID"], ["nombre", "Nombre"], ["estatus", "Estatus"]],
+        fields: [
+          ["nombres", "Nombre(s)", "text", true, 100],
+          ["apellido1", "Primer apellido", "text", true, 100],
+          ["apellido2", "Segundo apellido", "text", false, 100],
+          ["estatus", "Estatus", "choice", true, ["habilitado", "deshabilitado"]]
+        ]
+      },
+      vehiculos: {
+        title: "Vehículos", singular: "vehículo", pk: "id_vehiculo",
+        columns: [["id_vehiculo", "ID"], ["modelo", "Modelo"], ["marca", "Marca"], ["matricula", "Matrícula"], ["descripcion_vehiculo", "Descripción"], ["id_usuario_fk", "Conductor"]],
+        fields: [
+          ["modelo", "Modelo", "text", true, 50],
+          ["marca", "Marca", "text", true, 50],
+          ["matricula", "Matrícula", "text", true, 20],
+          ["descripcion_vehiculo", "Descripción", "text", false, 255],
+          ["id_usuario_fk", "Conductor", "relation", true, "usuarios"]
+        ]
+      },
+      cajones: {
+        title: "Cajones", singular: "cajón", pk: "id_cajon",
+        columns: [["id_cajon", "ID"], ["nombre", "Nombre"], ["hora_apertura", "Apertura"], ["hora_cierre", "Cierre"], ["paquetes", "Paquetes"], ["id_vehiculo_fk", "Vehículo"]],
+        fields: [
+          ["nombre", "Nombre del cajón", "text", true, 50],
+          ["hora_apertura", "Hora de inicio", "time", true],
+          ["hora_cierre", "Hora de fin", "time", true],
+          ["paquetes", "Paquetes entregados", "number", true],
+          ["id_vehiculo_fk", "Vehículo asignado", "relation", false, "vehiculos"]
+        ]
+      },
+      roles: {
+        title: "Roles", singular: "rol", pk: "id_rol",
+        columns: [["id_rol", "ID"], ["rol", "Rol"], ["rol_descripcion", "Descripción"], ["id_usuario_fk", "Usuario"]],
+        fields: [
+          ["rol", "Rol", "choice", true, ["conductor", "supervisor"]],
+          ["rol_descripcion", "Descripción", "text", false, 255],
+          ["id_usuario_fk", "Usuario", "relation", true, "usuarios"]
+        ]
+      },
+      contactos: {
+        title: "Contactos", singular: "contacto", pk: "id_contacto",
+        columns: [["id_contacto", "ID"], ["telefono", "Teléfono"], ["email", "Correo electrónico"], ["id_usuario_fk", "Usuario"]],
+        fields: [
+          ["telefono", "Teléfono (10 dígitos)", "tel", true],
+          ["email", "Correo electrónico", "email", true],
+          ["id_usuario_fk", "Usuario", "relation", true, "usuarios"]
+        ]
+      }
+    };
+    const NAV = [
+      ["supervisor", "▦", "Panel supervisor"],
+      ["usuarios", "♙", "Usuarios"],
+      ["vehiculos", "🚚", "Vehículos"],
+      ["cajones", "▣", "Cajones"],
+      ["roles", "◇", "Roles"],
+      ["contactos", "☎", "Contactos"]
+    ];
+
+    function demoData() {
+      const users = [
+        ["Carlos", "Ramírez", "López", "habilitado", "carlos"],
+        ["María", "González", "Soto", "habilitado", "maria"],
+        ["Luis", "Hernández", null, "deshabilitado", "luis"],
+        ["Ana", "Martínez", "Ruiz", "habilitado", "ana"],
+        ["Jorge", "Torres", "Vega", "habilitado", "jorge"],
+        ["Patricia", "Flores", "Díaz", "habilitado", "patricia"]
+      ];
+      const vehicles = [
+        ["NP300", "Nissan", "DGO-101-A", 1],
+        ["Kangoo", "Renault", "DGO-202-B", 2],
+        ["Transit", "Ford", "DGO-303-C", 3],
+        ["Hilux", "Toyota", "DGO-404-D", 4],
+        ["Sprinter", "Mercedes", "DGO-505-E", 5]
+      ];
+      const bays = [
+        ["Cajón A1", "06:00", "14:00", 124],
+        ["Cajón A2", "08:00", "16:00", 98],
+        ["Cajón B1", "12:00", "20:00", 0],
+        ["Cajón B2", "14:00", "22:00", 143],
+        ["Cajón C1", "18:00", "23:00", 87]
+      ];
+      return {
+        usuarios: users.map((u, i) => ({ id_usuario: i + 1, nombres: u[0], apellido1: u[1], apellido2: u[2], estatus: u[3] })),
+        vehiculos: vehicles.map((v, i) => ({ id_vehiculo: i + 1, modelo: v[0], marca: v[1], matricula: v[2], descripcion_vehiculo: "Unidad de reparto", id_usuario_fk: v[3] })),
+        cajones: bays.map((b, i) => ({ id_cajon: i + 1, nombre: b[0], hora_apertura: b[1] + ":00", hora_cierre: b[2] + ":00", paquetes: b[3], id_vehiculo_fk: i + 1 })),
+        roles: users.map((u, i) => ({ id_rol: i + 1, rol: i === 5 ? "supervisor" : "conductor", rol_descripcion: null, id_usuario_fk: i + 1 })),
+        contactos: users.slice(0, 5).map((u, i) => ({ id_contacto: i + 1, telefono: "618555010" + (i + 1), email: u[4] + "@almacen.mx", id_usuario_fk: i + 1 }))
+      };
+    }
+
+    let loadWarning = null;
+    function loadData() {
+      try {
+        const saved = localStorage.getItem(STORE_KEY);
+        if (!saved) return demoData();
+        const parsed = JSON.parse(saved);
+        for (const key of Object.keys(ENTITIES)) {
+          if (!Array.isArray(parsed[key])) throw new Error("Faltan datos válidos para " + ENTITIES[key].title + ".");
+        }
+        return parsed;
+      } catch (error) {
+        loadWarning = "No se pudieron leer los datos guardados. Se cargarán los datos de ejemplo. " + error.message;
+        return demoData();
+      }
+    }
+
+    let data = loadData();
+    let currentPage = "supervisor";
+    let editing = null;
+    let updatedAt = new Date();
+
+    function escapeHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+      })[char]);
+    }
+    function saveData() {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(data));
+      } catch (error) {
+        alert("No se pudieron guardar los cambios en este navegador: " + error.message);
+      }
+    }
+    function fullName(user) {
+      return [user.nombres, user.apellido1, user.apellido2].filter(Boolean).join(" ");
+    }
+    function relationName(entity, id) {
+      const parent = data[entity].find(row => row[ENTITIES[entity].pk] === Number(id));
+      if (!parent) return "—";
+      return entity === "usuarios" ? fullName(parent) :
+        `${parent.marca} ${parent.modelo} (${parent.matricula})`;
+    }
+    function turnStatus(open, close, now) {
+      const current = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      const seconds = value => {
+        const parts = value.split(":").map(Number);
+        return parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
+      };
+      if (current < seconds(open)) return "por_iniciar";
+      if (current >= seconds(close)) return "finalizado";
+      return "activo";
+    }
+    function progress(open, close, now) {
+      const seconds = value => {
+        const parts = value.split(":").map(Number);
+        return parts[0] * 3600 + parts[1] * 60 + (parts[2] || 0);
+      };
+      const start = seconds(open), end = seconds(close);
+      const current = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+      return end <= start ? 0 : Math.max(0, Math.min(1, (current - start) / (end - start)));
+    }
+    function driverRows(now = new Date()) {
+      const supervisorIds = new Set(data.roles.filter(row => row.rol === "supervisor").map(row => row.id_usuario_fk));
+      const driverIds = new Set(data.roles.filter(row => row.rol === "conductor").map(row => row.id_usuario_fk));
+      const rows = [], globalStatuses = [];
+      data.usuarios.forEach(user => {
+        const uid = user.id_usuario;
+        if (supervisorIds.has(uid) && !driverIds.has(uid)) return;
+        const vehicles = data.vehiculos.filter(vehicle => vehicle.id_usuario_fk === uid);
+        const userRows = [];
+        vehicles.forEach(vehicle => {
+          const bays = data.cajones.filter(bay => bay.id_vehiculo_fk === vehicle.id_vehiculo);
+          if (!bays.length) userRows.push({ user, vehicle, bay: null, estado: "sin_cajon", progreso: null, paquetes: 0 });
+          bays.forEach(bay => userRows.push({
+            user, vehicle, bay, estado: turnStatus(bay.hora_apertura, bay.hora_cierre, now),
+            progreso: progress(bay.hora_apertura, bay.hora_cierre, now), paquetes: Number(bay.paquetes) || 0
+          }));
+        });
+        if (!userRows.length) userRows.push({ user, vehicle: null, bay: null, estado: "sin_cajon", progreso: null, paquetes: 0 });
+        const enabled = user.estatus !== "deshabilitado";
+        const shifts = userRows.filter(row => row.bay).map(row => row.estado);
+        const globalStatus = !enabled ? "deshabilitado" :
+          shifts.includes("activo") ? "activo" :
+          shifts.includes("por_iniciar") ? "por_iniciar" :
+          shifts.includes("finalizado") ? "finalizado" : "sin_cajon";
+        globalStatuses.push(globalStatus);
+        userRows.forEach(row => rows.push({ ...row, habil: enabled, estado: enabled ? row.estado : "deshabilitado" }));
+      });
+      return { rows, globalStatuses };
+    }
+    function statusTag(status) {
+      return `<span class="status ${status}">${escapeHtml(STATUS[status] || status)}</span>`;
+    }
+    function pageHeading(title, subtitle, action = "") {
+      return `<div class="page-heading"><div><h2>${escapeHtml(title)}</h2><p>${escapeHtml(subtitle)}</p></div>${action}</div>`;
+    }
+    function renderNavigation() {
+      document.getElementById("navigation").innerHTML = NAV.map(([key, icon, label]) =>
+        `<button class="nav-item ${key === currentPage ? "active" : ""}" data-page="${key}">
+          <span class="icon" aria-hidden="true">${icon}</span><span>${label}</span>
+        </button>`).join("");
+    }
+    function renderDashboard() {
+      const { rows, globalStatuses } = driverRows();
+      const active = globalStatuses.filter(state => state === "activo").length;
+      const outside = globalStatuses.filter(state => ["por_iniciar", "finalizado", "sin_cajon"].includes(state)).length;
+      const disabled = globalStatuses.filter(state => state === "deshabilitado").length;
+      const packages = rows.reduce((sum, row) => sum + row.paquetes, 0);
+      const cards = [["Repartidores", globalStatuses.length, "var(--cyan)"], ["Activos ahora", active, "var(--green)"],
+        ["Fuera de turno", outside, "var(--amber)"], ["Deshabilitados", disabled, "var(--red)"], ["Paquetes totales", packages, "var(--purple)"]];
+      const search = document.getElementById("driver-search")?.value.trim().toLocaleLowerCase("es") || "";
+      const filter = document.getElementById("status-filter")?.value || "Todos";
+      const visible = rows.filter(row => {
+        const matchesStatus = filter === "Todos" || row.estado === filter;
+        const contact = data.contactos.find(item => item.id_usuario_fk === row.user.id_usuario);
+        const phone = contact ? contact.telefono : "—";
+        const haystack = [fullName(row.user), row.vehicle ? `${row.vehicle.marca} ${row.vehicle.modelo} (${row.vehicle.matricula})` : "—", row.bay ? row.bay.nombre : "—", phone].join(" ").toLocaleLowerCase("es");
+        return matchesStatus && haystack.includes(search);
+      });
+      document.getElementById("main").innerHTML =
+        pageHeading("Panel del supervisor", "Estatus automático según el horario de cada cajón") +
+        `<section class="cards">${cards.map(([label, count, color]) => `<article class="card" style="--card-color:${color}"><div class="card-body"><strong>${count}</strong><span>${label}</span></div></article>`).join("")}</section>` +
+        `<div class="toolbar"><label for="driver-search">BUSCAR</label><input id="driver-search" type="search" placeholder="Repartidor, vehículo o teléfono" value="${escapeHtml(search)}">` +
+        `<label for="status-filter">ESTADO</label><select id="status-filter"><option value="Todos">Todos</option>${Object.entries(STATUS).map(([key, label]) => `<option value="${key}" ${filter === key ? "selected" : ""}>${label}</option>`).join("")}</select>` +
+        `<span class="spacer"></span><span class="updated">Actualizado ${updatedAt.toLocaleTimeString("es-MX")}</span></div>` +
+        `<div class="table-wrap"><table><thead><tr><th>ID</th><th>Repartidor</th><th>Estado</th><th>Vehículo</th><th>Cajón</th><th>Horario</th><th>Avance del turno</th><th>Paquetes</th><th>Teléfono</th><th>Cuenta</th></tr></thead><tbody>` +
+        (visible.length ? visible.map(row => {
+          const contact = data.contactos.find(item => item.id_usuario_fk === row.user.id_usuario);
+          const percentage = row.progreso === null || row.estado === "deshabilitado" ? null : Math.floor(row.progreso * 100);
+          return `<tr><td>${row.user.id_usuario}</td><td>${escapeHtml(fullName(row.user))}</td><td>${statusTag(row.estado)}</td>
+            <td>${escapeHtml(row.vehicle ? `${row.vehicle.marca} ${row.vehicle.modelo} (${row.vehicle.matricula})` : "—")}</td>
+            <td>${escapeHtml(row.bay ? row.bay.nombre : "—")}</td>
+            <td>${row.bay ? `${escapeHtml(row.bay.hora_apertura.slice(0, 5))} – ${escapeHtml(row.bay.hora_cierre.slice(0, 5))}` : "—"}</td>
+            <td>${percentage === null ? "—" : `<span class="progress"><i style="width:${percentage}%"></i></span>${percentage}%`}</td>
+            <td>${row.paquetes}</td><td>${escapeHtml(contact ? contact.telefono : "—")}</td>
+            <td><button class="button small ${row.habil ? "secondary" : ""}" data-toggle-user="${row.user.id_usuario}">${row.habil ? "Bloquear" : "Habilitar"}</button></td></tr>`;
+        }).join("") : '<tr><td class="empty" colspan="10">No hay repartidores que coincidan.</td></tr>') +
+        `</tbody></table></div>`;
+      document.getElementById("driver-search").addEventListener("input", renderDashboard);
+      document.getElementById("status-filter").addEventListener("change", renderDashboard);
+      document.querySelectorAll("[data-toggle-user]").forEach(button => button.addEventListener("click", () => {
+        const user = data.usuarios.find(item => item.id_usuario === Number(button.dataset.toggleUser));
+        if (!user) return;
+        const next = user.estatus === "deshabilitado" ? "habilitado" : "deshabilitado";
+        if (confirm(`¿${next === "deshabilitado" ? "Bloquear" : "Habilitar"} la cuenta de ${fullName(user)}?`)) {
+          user.estatus = next;
+          updatedAt = new Date();
+          saveData();
+          render();
+        }
+      }));
+    }
+    function entityValue(entity, row, key) {
+      if (key === "nombre" && entity === "usuarios") return fullName(row);
+      if (key === "id_usuario_fk") return relationName("usuarios", row[key]);
+      if (key === "id_vehiculo_fk") return row[key] == null ? "—" : relationName("vehiculos", row[key]);
+      if (key.startsWith("hora_") && row[key]) return row[key].slice(0, 5);
+      if (key === "estatus") return statusTag(row[key]);
+      return escapeHtml(row[key] == null || row[key] === "" ? "—" : row[key]);
+    }
+    function renderEntity(entity) {
+      const config = ENTITIES[entity];
+      const action = `<button class="button" id="new-record">+ Nuevo</button>`;
+      const search = document.getElementById("entity-search")?.value.trim().toLocaleLowerCase("es") || "";
+      const records = data[entity].filter(row => JSON.stringify(row).toLocaleLowerCase("es").includes(search));
+      document.getElementById("main").innerHTML =
+        pageHeading(config.title, `Administración de ${config.title.toLocaleLowerCase("es")}`, action) +
+        `<div class="toolbar"><label for="entity-search">BUSCAR</label><input id="entity-search" type="search" placeholder="Buscar ${config.title.toLocaleLowerCase("es")}" value="${escapeHtml(search)}"><span class="spacer"></span><span class="muted">${records.length} registro(s)</span></div>` +
+        `<div class="table-wrap"><table><thead><tr>${config.columns.map(([, title]) => `<th>${title}</th>`).join("")}<th>Acciones</th></tr></thead><tbody>` +
+        (records.length ? records.map(row => `<tr>${config.columns.map(([key]) => `<td>${entityValue(entity, row, key)}</td>`).join("")}
+          <td><button class="button secondary small" data-edit="${row[config.pk]}">Editar</button> <button class="button danger small" data-delete="${row[config.pk]}">Eliminar</button></td></tr>`).join("") :
+          `<tr><td class="empty" colspan="${config.columns.length + 1}">No hay registros.</td></tr>`) +
+        `</tbody></table></div>`;
+      document.getElementById("entity-search").addEventListener("input", () => renderEntity(entity));
+      document.getElementById("new-record").addEventListener("click", () => openForm(entity));
+      document.querySelectorAll("[data-edit]").forEach(button => button.addEventListener("click", () => openForm(entity, Number(button.dataset.edit))));
+      document.querySelectorAll("[data-delete]").forEach(button => button.addEventListener("click", () => deleteRecord(entity, Number(button.dataset.delete))));
+    }
+    function render() {
+      renderNavigation();
+      if (currentPage === "supervisor") renderDashboard();
+      else renderEntity(currentPage);
+      if (loadWarning) {
+        document.getElementById("main").insertAdjacentHTML("afterbegin", `<div class="notice">${escapeHtml(loadWarning)}</div>`);
+        loadWarning = null;
+      }
+    }
+    function deleteRecord(entity, id) {
+      const config = ENTITIES[entity];
+      const child = Object.keys(ENTITIES).find(key => ENTITIES[key].fields.some(field => field[2] === "relation" && field[4] === entity && data[key].some(row => row[field[0]] === id)));
+      if (child) {
+        alert(`No se puede eliminar: el registro todavía está asignado a ${ENTITIES[child].title.toLocaleLowerCase("es")}.`);
+        return;
+      }
+      if (!confirm(`¿Eliminar ${config.singular} ${id}?`)) return;
+      data[entity] = data[entity].filter(row => row[config.pk] !== id);
+      saveData();
+      render();
+    }
+    function relationOptions(parent, selected, optional) {
+      const config = ENTITIES[parent];
+      const records = data[parent].map(row => {
+        const label = parent === "usuarios" ? fullName(row) : `${row.marca} ${row.modelo} (${row.matricula})`;
+        return `<option value="${row[config.pk]}" ${Number(selected) === row[config.pk] ? "selected" : ""}>${row[config.pk]} - ${escapeHtml(label)}</option>`;
+      }).join("");
+      return `${optional ? '<option value="">— Sin asignar —</option>' : '<option value="">Selecciona…</option>'}${records}`;
+    }
+    function openForm(entity, id = null) {
+      const config = ENTITIES[entity];
+      const record = id === null ? null : data[entity].find(row => row[config.pk] === id);
+      if (id !== null && !record) {
+        alert("No se encontró el registro seleccionado.");
+        return;
+      }
+      editing = { entity, id };
+      document.getElementById("dialog-title").textContent = `${record ? "Editar" : "Nuevo"} ${config.singular}`;
+      document.getElementById("dialog-fields").innerHTML = config.fields.map(([key, label, type, required, extra]) => {
+        const value = record && record[key] != null ? record[key] : "";
+        let control;
+        if (type === "choice") {
+          control = `<select id="field-${key}" name="${key}" ${required ? "required" : ""}>${extra.map(option => `<option value="${option}" ${value === option ? "selected" : ""}>${option}</option>`).join("")}</select>`;
+        } else if (type === "relation") {
+          if (!data[extra].length && required) {
+            return `<div class="notice">Agrega primero un registro en ${ENTITIES[extra].title.toLocaleLowerCase("es")} para asignarlo.</div>`;
+          }
+          control = `<select id="field-${key}" name="${key}" ${required ? "required" : ""}>${relationOptions(extra, value, !required)}</select>`;
+        } else {
+          const attrs = type === "text" ? `maxlength="${extra}"` : type === "number" ? 'min="0" step="1"' : "";
+          const stored = type === "time" && value ? value.slice(0, 5) : value;
+          control = `<input id="field-${key}" name="${key}" type="${type}" value="${escapeHtml(stored)}" ${attrs} ${required ? "required" : ""}>`;
+        }
+        return `<div class="field"><label for="field-${key}">${escapeHtml(label)}${required ? " *" : ""}</label>${control}</div>`;
+      }).join("");
+      const dialog = document.getElementById("record-dialog");
+      if (!dialog.open) dialog.showModal();
+    }
+    function validateForm(entity, formData) {
+      const config = ENTITIES[entity];
+      const result = {}, errors = [];
+      config.fields.forEach(([key, label, type, required, extra]) => {
+        let value = String(formData.get(key) || "").trim();
+        if (!value) {
+          if (required) errors.push(`${label}: es obligatorio.`);
+          result[key] = null;
+          return;
+        }
+        if (type === "text" && value.length > extra) errors.push(`${label}: máximo ${extra} caracteres.`);
+        if (type === "number" && (!/^\d+$/.test(value) || Number(value) < 0)) errors.push(`${label}: debe ser un entero no negativo.`);
+        if (type === "tel") {
+          value = value.replace(/[\s\-()]/g, "");
+          if (!/^\d{10}$/.test(value)) errors.push(`${label}: debe tener 10 dígitos.`);
+        }
+        if (type === "email") {
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)) errors.push(`${label}: correo no válido.`);
+          value = value.toLocaleLowerCase("es");
+        }
+        if (type === "relation" && !data[extra].some(row => row[ENTITIES[extra].pk] === Number(value))) errors.push(`${label}: selecciona un registro existente.`);
+        result[key] = type === "relation" || type === "number" ? Number(value) : value;
+        if (type === "time") result[key] += ":00";
+      });
+      if (entity === "cajones" && result.hora_apertura && result.hora_cierre && result.hora_cierre <= result.hora_apertura) {
+        errors.push("Hora de fin: debe ser posterior a la hora de inicio.");
+      }
+      return { result, errors };
+    }
+    function submitForm(event) {
+      event.preventDefault();
+      if (!editing) return;
+      const { entity, id } = editing;
+      const { result, errors } = validateForm(entity, new FormData(event.currentTarget));
+      if (errors.length) {
+        alert("Revisa los campos:\n\n" + errors.join("\n"));
+        return;
+      }
+      const config = ENTITIES[entity];
+      if (id === null) {
+        const nextId = Math.max(0, ...data[entity].map(row => row[config.pk])) + 1;
+        data[entity].push({ [config.pk]: nextId, ...result });
+      } else {
+        const row = data[entity].find(item => item[config.pk] === id);
+        if (!row) {
+          alert("El registro ya no existe.");
+          return;
+        }
+        Object.assign(row, result);
+      }
+      saveData();
+      document.getElementById("record-dialog").close();
+      render();
+    }
+
+    document.getElementById("navigation").addEventListener("click", event => {
+      const button = event.target.closest("[data-page]");
+      if (!button) return;
+      currentPage = button.dataset.page;
+      updatedAt = new Date();
+      render();
+    });
+    document.getElementById("record-form").addEventListener("submit", submitForm);
+    document.getElementById("cancel-dialog").addEventListener("click", () => document.getElementById("record-dialog").close());
+    document.getElementById("record-dialog").addEventListener("click", event => {
+      if (event.target === event.currentTarget) event.currentTarget.close();
+    });
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString("es-MX");
+      document.getElementById("date").textContent = new Intl.DateTimeFormat("es-MX", { weekday: "long", day: "2-digit", month: "2-digit", year: "numeric" }).format(now);
+    }
+    updateClock();
+    render();
+    setInterval(() => {
+      updateClock();
+      if (currentPage === "supervisor") {
+        updatedAt = new Date();
+        renderDashboard();
+      }
+    }, 5000);
+  </script>
+</body>
+</html>
